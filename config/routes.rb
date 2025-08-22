@@ -18,7 +18,15 @@ Rails.application.routes.draw do
     get "genres", to: "books#genres"
     resources :reviews, only: [ :index, :create ]
     resources :orders, only: [ :index, :create ] do
-      member { post :complete }
+      member do
+        post :complete
+        patch :cancel
+      end
+    end
+    
+    # Admin routes
+    namespace :admin do
+      get :order_analytics
     end
   end
 end

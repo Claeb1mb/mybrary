@@ -168,6 +168,50 @@ class Api::AdminController < ApplicationController
     }
   end
 
+  # Add order analytics endpoint
+  def order_analytics
+    total_orders = Order.count
+    pending_orders = Order.pending.count
+    completed_orders = Order.completed.count
+    cancelled_orders = Order.cancelled.count
+
+    total_revenue = Order.completed.sum(&:total_price)
+    avg_order_value = completed_orders > 0 ? total_revenue / completed_orders : 0
+
+    recent_orders = Order.completed.where('completed_at >= ?', 7.days.ago).count
+
+    # Top selling books
+    top_books = OrderItem.joins(:book, :order)
+                         .where(orders: { status: 'completed' })
+                         .group('books.title', 'books.id')
+                         .sum(:quantity)
+                         .sort_by { |k, v| -v }
+                         .first(5)
+                         .map { |book_data, quantity|
+                           book = Book.find(book_data[1])
+                           {
+                             title: book_data[0],
+                             author: book.author.name,
+                             total_sold: quantity
+                           }
+                         }
+
+    render json: {
+      order_stats: {
+        total_orders: total_orders,
+        pending_orders: pending_orders,
+        completed_orders: completed_orders,
+        cancelled_orders: cancelled_orders
+      },
+      revenue_stats: {
+        total_revenue: total_revenue.round(2),
+        average_order_value: avg_order_value.round(2),
+        orders_last_7_days: recent_orders
+      },
+      top_selling_books: top_books
+    }
+  end
+
   private
 
   def extract_primary_genre(categories_json)

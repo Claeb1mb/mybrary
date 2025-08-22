@@ -7,12 +7,23 @@ class Api::OrdersController < ApplicationController
     else
                Order.all.order(order_date: :desc)
     end
+    
     render json: orders.map { |order|
       {
         id: order.id,
         order_date: order.order_date,
+        completed_at: order.completed_at,
         total_amount: order.total_price,
-        status: order.status
+        status: order.status,
+        item_count: order.order_items.sum(:quantity),
+        books: order.order_items.includes(:book).map { |item|
+          {
+            title: item.book.title,
+            author: item.book.author.name,
+            quantity: item.quantity,
+            unit_price: item.unit_price
+          }
+        }
       }
     }
   end
@@ -48,7 +59,39 @@ class Api::OrdersController < ApplicationController
 
   def complete
     order = Order.find(params[:id])
-    Orders::Complete.new(order: order).call
-    render json: { id: order.id, status: "completed" }, status: :ok
+    
+    begin
+      completed_order = Orders::Complete.new(order: order).call
+      render json: { 
+        id: completed_order.id, 
+        status: completed_order.status,
+        completed_at: completed_order.completed_at,
+        message: "Order completed successfully"
+      }, status: :ok
+    rescue StandardError => e
+      render json: {
+        error: "Order completion failed",
+        message: e.message
+      }, status: :unprocessable_entity
+    end
+  end
+
+  def cancel
+    order = Order.find(params[:id])
+    
+    if order.status != 'pending'
+      render json: {
+        error: "Cannot cancel order",
+        message: "Only pending orders can be cancelled"
+      }, status: :unprocessable_entity
+      return
+    end
+    
+    order.update!(status: 'cancelled')
+    render json: {
+      id: order.id,
+      status: order.status,
+      message: "Order cancelled successfully"
+    }, status: :ok
   end
 end

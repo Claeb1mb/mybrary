@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_08_22_165434) do
+ActiveRecord::Schema[7.2].define(version: 2025_08_22_172500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "plpgsql"
@@ -76,6 +76,7 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_22_165434) do
     t.string "status", default: "pending", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.datetime "completed_at"
     t.index ["user_id", "order_date"], name: "index_orders_on_user_id_and_order_date"
     t.index ["user_id"], name: "index_orders_on_user_id"
     t.check_constraint "status::text = ANY (ARRAY['pending'::character varying, 'completed'::character varying, 'cancelled'::character varying]::text[])", name: "orders_status_chk"
