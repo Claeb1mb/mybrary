@@ -27,9 +27,9 @@ function BookStore() {
 
   const { data: books = [], isLoading: booksLoading } = useQuery({
     queryKey: ['books', searchTerm, selectedGenre],
-    queryFn: () => api.getBooks({ 
-      search: searchTerm || undefined, 
-      genre: selectedGenre || undefined 
+    queryFn: () => api.getBooks({
+      search: searchTerm || undefined,
+      genre: selectedGenre || undefined
     })
   });
 
@@ -176,13 +176,13 @@ function BookStore() {
           {books.length === 0 && !booksLoading && (
             <div className="empty-state">
               <p>
-                {searchTerm || selectedGenre 
-                  ? 'No books found matching your search criteria.' 
+                {searchTerm || selectedGenre
+                  ? 'No books found matching your search criteria.'
                   : 'No books available at the moment.'
                 }
               </p>
               {(searchTerm || selectedGenre) && (
-                <button 
+                <button
                   onClick={() => {
                     setSearchTerm('');
                     setSelectedGenre('');

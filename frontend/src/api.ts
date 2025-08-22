@@ -8,7 +8,7 @@ export const api = {
     if (params?.search) url.searchParams.append('search', params.search);
     if (params?.genre) url.searchParams.append('genre', params.genre);
     if (params?.author) url.searchParams.append('author', params.author);
-    
+
     const response = await fetch(url.toString());
     if (!response.ok) throw new Error('Failed to fetch books');
     return response.json();

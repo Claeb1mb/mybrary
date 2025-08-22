@@ -30,7 +30,7 @@ export const SearchAndFilter: React.FC<SearchAndFilterProps> = ({
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setSearchTerm(value);
-    
+
     // Debounced search - search as user types with a small delay
     const timeoutId = setTimeout(() => {
       onSearch(value);

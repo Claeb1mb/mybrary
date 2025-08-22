@@ -7,6 +7,60 @@
 #   ["Action", "Comedy", "Drama", "Horror"].each do |genre_name|
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
+
+# Helper method to create books from Google Books API
+def create_book_from_google(title, author_name, genre, price = nil, stock_qty = nil)
+  puts "Searching for: #{title} by #{author_name}"
+
+  # Try to find existing book first
+  existing_book = Book.joins(:author).where(
+    'LOWER(books.title) = ? AND LOWER(authors.name) = ?',
+    title.downcase,
+    author_name.downcase
+  ).first
+
+  return existing_book if existing_book
+
+  # Search Google Books
+  google_result = GoogleBooksService.search_by_title_and_author(title, author_name)
+
+  if google_result && google_result['items']&.any?
+    book_data = GoogleBooksService.extract_book_data(google_result['items'].first)
+
+    # Find or create author
+    author = Author.find_or_create_by!(name: author_name)
+
+    # Use primary ISBN or generate a unique one
+    isbn = book_data[:isbn_13] || book_data[:isbn_10] || "SEED-#{SecureRandom.hex(6)}"
+
+    # Create book with Google Books data
+    book = Book.find_or_create_by!(isbn: isbn) do |b|
+      b.title = title
+      b.author = author
+      b.genre = genre
+      b.price = price || rand(8.99..19.99).round(2)
+      b.stock_qty = stock_qty || rand(15..50)
+      b.published_at = book_data[:published_date] || 20.years.ago
+      b.description = book_data[:description]
+      b.cover_image_url = book_data[:cover_image_url]
+      b.google_books_id = book_data[:google_books_id]
+      b.isbn_10 = book_data[:isbn_10]
+      b.isbn_13 = book_data[:isbn_13]
+      b.page_count = book_data[:page_count]
+      b.language = book_data[:language] || 'en'
+    end
+
+    puts "✓ Created: #{book.title}"
+    book
+  else
+    puts "✗ Could not find: #{title} by #{author_name}"
+    nil
+  end
+rescue => e
+  puts "Error creating book: #{e.message}"
+  nil
+end
+
 u1 = User.find_by(email: 'avant@example.com')
 if u1.nil?
   u1 = User.create!(
@@ -229,3 +283,83 @@ Review.find_or_create_by!(user: u2, book: b12) do |review|
   review.rating = 5
   review.content = 'Epic space opera with incredible world-building. Herbert created something truly special.'
 end
+
+puts "\n=== Creating additional books from Google Books API ==="
+
+# Add more genres
+g7 = Genre.find_or_create_by!(name: 'Romance')
+g8 = Genre.find_or_create_by!(name: 'Thriller')
+g9 = Genre.find_or_create_by!(name: 'Non-Fiction')
+g10 = Genre.find_or_create_by!(name: 'Historical Fiction')
+
+# Popular contemporary books
+additional_books = [
+  # Sci-Fi
+  [ 'The Martian', 'Andy Weir', g1 ],
+  [ 'Project Hail Mary', 'Andy Weir', g1 ],
+  [ 'Neuromancer', 'William Gibson', g1 ],
+  [ 'The Time Machine', 'H.G. Wells', g1 ],
+  [ 'Ender\'s Game', 'Orson Scott Card', g1 ],
+
+  # Fantasy
+  [ 'The Name of the Wind', 'Patrick Rothfuss', g2 ],
+  [ 'The Final Empire', 'Brandon Sanderson', g2 ],
+  [ 'The Fellowship of the Ring', 'J.R.R. Tolkien', g2 ],
+  [ 'The Lion, the Witch and the Wardrobe', 'C.S. Lewis', g2 ],
+  [ 'American Gods', 'Neil Gaiman', g2 ],
+
+  # Mystery/Thriller
+  [ 'Gone Girl', 'Gillian Flynn', g8 ],
+  [ 'The Girl with the Dragon Tattoo', 'Stieg Larsson', g8 ],
+  [ 'In the Woods', 'Tana French', g4 ],
+  [ 'The Maltese Falcon', 'Dashiell Hammett', g4 ],
+  [ 'The Big Sleep', 'Raymond Chandler', g4 ],
+
+  # Literary Fiction
+  [ 'To Kill a Mockingbird', 'Harper Lee', g3 ],
+  [ '1984', 'George Orwell', g3 ],
+  [ 'The Great Gatsby', 'F. Scott Fitzgerald', g3 ],
+  [ 'Pride and Prejudice', 'Jane Austen', g3 ],
+  [ 'The Catcher in the Rye', 'J.D. Salinger', g3 ],
+
+  # Romance
+  [ 'Pride and Prejudice', 'Jane Austen', g7 ],
+  [ 'Jane Eyre', 'Charlotte Brontë', g7 ],
+  [ 'Outlander', 'Diana Gabaldon', g7 ],
+  [ 'Me Before You', 'Jojo Moyes', g7 ],
+
+  # Historical Fiction
+  [ 'The Book Thief', 'Markus Zusak', g10 ],
+  [ 'All the Light We Cannot See', 'Anthony Doerr', g10 ],
+  [ 'The Pillars of the Earth', 'Ken Follett', g10 ],
+  [ 'Memoirs of a Geisha', 'Arthur Golden', g10 ],
+
+  # Young Adult
+  [ 'The Hunger Games', 'Suzanne Collins', g6 ],
+  [ 'The Fault in Our Stars', 'John Green', g6 ],
+  [ 'Divergent', 'Veronica Roth', g6 ],
+  [ 'The Perks of Being a Wallflower', 'Stephen Chbosky', g6 ],
+
+  # Horror
+  [ 'Dracula', 'Bram Stoker', g5 ],
+  [ 'Frankenstein', 'Mary Shelley', g5 ],
+  [ 'The Exorcist', 'William Peter Blatty', g5 ],
+  [ 'World War Z', 'Max Brooks', g5 ],
+
+  # Non-Fiction
+  [ 'Sapiens', 'Yuval Noah Harari', g9 ],
+  [ 'Educated', 'Tara Westover', g9 ],
+  [ 'The Immortal Life of Henrietta Lacks', 'Rebecca Skloot', g9 ],
+  [ 'Born a Crime', 'Trevor Noah', g9 ]
+]
+
+# Create books from Google Books API
+additional_books.each do |title, author_name, genre|
+  create_book_from_google(title, author_name, genre)
+  sleep(0.5) # Be nice to Google Books API
+end
+
+puts "\n=== Seeding completed! ==="
+puts "Total books in catalog: #{Book.count}"
+puts "Total authors: #{Author.count}"
+puts "Total genres: #{Genre.count}"

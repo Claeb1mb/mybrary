@@ -9,6 +9,34 @@ interface CartModalProps {
 
 export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckout }) => {
   const { items, removeItem, updateQuantity, clearCart, getTotalPrice } = useCartStore();
+  const [errors, setErrors] = React.useState<Record<number, string>>({});
+
+  const handleQuantityChange = (bookId: number, newQuantity: number) => {
+    const result = updateQuantity(bookId, newQuantity);
+    if (!result.success) {
+      setErrors(prev => ({ ...prev, [bookId]: result.message || 'Invalid quantity' }));
+    } else {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[bookId];
+        return newErrors;
+      });
+    }
+  };
+
+  // Clear errors after 3 seconds
+  React.useEffect(() => {
+    Object.keys(errors).forEach(bookId => {
+      const timer = setTimeout(() => {
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[parseInt(bookId)];
+          return newErrors;
+        });
+      }, 3000);
+      return () => clearTimeout(timer);
+    });
+  }, [errors]);
 
   if (!isOpen) return null;
 
@@ -59,11 +87,11 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckou
                         min="1"
                         max={item.book.stock_qty}
                         value={item.quantity}
-                        onChange={(e) => updateQuantity(item.book.id, parseInt(e.target.value) || 1)}
+                        onChange={(e) => handleQuantityChange(item.book.id, parseInt(e.target.value) || 1)}
                         style={{
                           width: '60px',
                           padding: '0.25rem 0.5rem',
-                          border: '1px solid #d1d5db',
+                          border: errors[item.book.id] ? '1px solid #dc2626' : '1px solid #d1d5db',
                           borderRadius: '4px',
                           textAlign: 'center',
                           fontSize: '0.875rem'
@@ -87,6 +115,20 @@ export const CartModal: React.FC<CartModalProps> = ({ isOpen, onClose, onCheckou
                       </button>
                     </div>
                   </div>
+
+                  {errors[item.book.id] && (
+                    <div style={{
+                      marginTop: '0.5rem',
+                      color: '#dc2626',
+                      fontSize: '0.75rem',
+                      backgroundColor: '#fef2f2',
+                      padding: '0.5rem',
+                      border: '1px solid #fecaca',
+                      borderRadius: '4px'
+                    }}>
+                      {errors[item.book.id]}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

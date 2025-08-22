@@ -3,17 +3,17 @@ class Api::BooksController < ApplicationController
 
   def index
     books = Book.includes(:author, :genre)
-    
+
     # Filter by genre if specified
     if params[:genre].present?
       books = books.joins(:genre).where("genres.name ILIKE ?", "%#{params[:genre]}%")
     end
-    
+
     # Filter by author if specified
     if params[:author].present?
       books = books.joins(:author).where("authors.name ILIKE ?", "%#{params[:author]}%")
     end
-    
+
     # Search by title, author, or description
     if params[:search].present?
       search_term = "%#{params[:search]}%"
@@ -22,7 +22,7 @@ class Api::BooksController < ApplicationController
         search_term, search_term, search_term
       )
     end
-    
+
     render json: books.map { |book|
       {
         id: book.id,

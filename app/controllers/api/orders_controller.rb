@@ -25,10 +25,25 @@ class Api::OrdersController < ApplicationController
         quantity: item[:quantity].to_i
       }
     end
-    order = Orders::Create.new(user: user, items: items).call
-    render json: {
-      id: order.id
-    }, status: :created
+
+    begin
+      order = Orders::Create.new(user: user, items: items).call
+      render json: {
+        id: order.id
+      }, status: :created
+    rescue StandardError => e
+      if e.message.include?("insufficient stock")
+        render json: {
+          error: "Stock validation failed",
+          message: e.message
+        }, status: :unprocessable_entity
+      else
+        render json: {
+          error: "Order creation failed",
+          message: e.message
+        }, status: :internal_server_error
+      end
+    end
   end
 
   def complete
