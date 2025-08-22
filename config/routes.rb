@@ -15,6 +15,7 @@ Rails.application.routes.draw do
     resources :books, only: [ :index, :show ] do
       resources :reviews, only: [ :index ]
     end
+    get 'genres', to: 'books#genres'
     resources :reviews, only: [ :index, :create ]
     resources :orders, only: [ :index, :create ] do
       member { post :complete }

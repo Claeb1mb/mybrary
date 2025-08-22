@@ -5,6 +5,7 @@ import { Book } from './types';
 import { useCartStore } from './store';
 import { Header } from './components/Header';
 import { BookCard } from './components/BookCard';
+import { SearchAndFilter } from './components/SearchAndFilter';
 import { CartModal } from './components/CartModal';
 import { CheckoutModal } from './components/CheckoutModal';
 import { ReviewsModal } from './components/ReviewsModal';
@@ -18,13 +19,23 @@ function BookStore() {
   const [isOrdersOpen, setIsOrdersOpen] = useState(false);
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
   const [isReviewsOpen, setIsReviewsOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedGenre, setSelectedGenre] = useState('');
 
   const { items, clearCart } = useCartStore();
   const queryClientInstance = useQueryClient();
 
   const { data: books = [], isLoading: booksLoading } = useQuery({
-    queryKey: ['books'],
-    queryFn: api.getBooks
+    queryKey: ['books', searchTerm, selectedGenre],
+    queryFn: () => api.getBooks({ 
+      search: searchTerm || undefined, 
+      genre: selectedGenre || undefined 
+    })
+  });
+
+  const { data: genres = [] } = useQuery({
+    queryKey: ['genres'],
+    queryFn: api.getGenres
   });
 
   const { data: reviews = [] } = useQuery({
@@ -114,6 +125,14 @@ function BookStore() {
     });
   };
 
+  const handleSearch = (search: string) => {
+    setSearchTerm(search);
+  };
+
+  const handleGenreFilter = (genre: string) => {
+    setSelectedGenre(genre);
+  };
+
   if (booksLoading) {
     return (
       <div className="empty-state" style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -136,6 +155,14 @@ function BookStore() {
             <p style={{ color: '#6b7280' }}>Discover your next great read</p>
           </div>
 
+          <SearchAndFilter
+            onSearch={handleSearch}
+            onGenreFilter={handleGenreFilter}
+            genres={genres}
+            currentSearch={searchTerm}
+            currentGenre={selectedGenre}
+          />
+
           <div className="books-grid">
             {books.map((book) => (
               <BookCard
@@ -146,9 +173,26 @@ function BookStore() {
             ))}
           </div>
 
-          {books.length === 0 && (
+          {books.length === 0 && !booksLoading && (
             <div className="empty-state">
-              <p>No books available at the moment.</p>
+              <p>
+                {searchTerm || selectedGenre 
+                  ? 'No books found matching your search criteria.' 
+                  : 'No books available at the moment.'
+                }
+              </p>
+              {(searchTerm || selectedGenre) && (
+                <button 
+                  onClick={() => {
+                    setSearchTerm('');
+                    setSelectedGenre('');
+                  }}
+                  className="btn btn-secondary"
+                  style={{ marginTop: '1rem' }}
+                >
+                  Clear Filters
+                </button>
+              )}
             </div>
           )}
         </div>

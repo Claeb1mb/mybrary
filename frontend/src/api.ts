@@ -1,11 +1,22 @@
-import { Book, Review, Order, OrderItem } from './types';
+import { Book, Review, Order, OrderItem, Genre } from './types';
 
 const API_BASE = 'http://localhost:3000/api';
 
 export const api = {
-  async getBooks(): Promise<Book[]> {
-    const response = await fetch(`${API_BASE}/books`);
+  async getBooks(params?: { search?: string; genre?: string; author?: string }): Promise<Book[]> {
+    const url = new URL(`${API_BASE}/books`);
+    if (params?.search) url.searchParams.append('search', params.search);
+    if (params?.genre) url.searchParams.append('genre', params.genre);
+    if (params?.author) url.searchParams.append('author', params.author);
+    
+    const response = await fetch(url.toString());
     if (!response.ok) throw new Error('Failed to fetch books');
+    return response.json();
+  },
+
+  async getGenres(): Promise<Genre[]> {
+    const response = await fetch(`${API_BASE}/genres`);
+    if (!response.ok) throw new Error('Failed to fetch genres');
     return response.json();
   },
 

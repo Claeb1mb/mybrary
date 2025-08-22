@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.2].define(version: 2025_08_21_002816) do
+ActiveRecord::Schema[7.2].define(version: 2025_08_22_165434) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "plpgsql"
@@ -34,6 +34,14 @@ ActiveRecord::Schema[7.2].define(version: 2025_08_21_002816) do
     t.date "published_at"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "google_books_id"
+    t.string "isbn_10"
+    t.string "isbn_13"
+    t.string "cover_image_url"
+    t.date "published_date"
+    t.integer "page_count"
+    t.text "categories"
+    t.string "language"
     t.index ["author_id"], name: "index_books_on_author_id"
     t.index ["genre_id"], name: "index_books_on_genre_id"
     t.index ["isbn"], name: "index_books_on_isbn", unique: true

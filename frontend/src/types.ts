@@ -6,6 +6,14 @@ export interface Book {
   price: string;
   stock_qty: number;
   author_name?: string;
+  cover_image_url?: string;
+  description?: string;
+  published_date?: string;
+  page_count?: number;
+  isbn_10?: string;
+  isbn_13?: string;
+  categories?: string;
+  language?: string;
 }
 
 export interface Review {
@@ -15,6 +23,12 @@ export interface Review {
   created_at: string;
   book_id: number;
   user_id: number;
+}
+
+export interface Genre {
+  id: number;
+  name: string;
+  book_count: number;
 }
 
 export interface Order {
