@@ -7,7 +7,7 @@ class Api::OrdersController < ApplicationController
     else
                Order.all.order(order_date: :desc)
     end
-    
+
     render json: orders.map { |order|
       {
         id: order.id,
@@ -59,11 +59,11 @@ class Api::OrdersController < ApplicationController
 
   def complete
     order = Order.find(params[:id])
-    
+
     begin
       completed_order = Orders::Complete.new(order: order).call
-      render json: { 
-        id: completed_order.id, 
+      render json: {
+        id: completed_order.id,
         status: completed_order.status,
         completed_at: completed_order.completed_at,
         message: "Order completed successfully"
@@ -78,16 +78,16 @@ class Api::OrdersController < ApplicationController
 
   def cancel
     order = Order.find(params[:id])
-    
-    if order.status != 'pending'
+
+    if order.status != "pending"
       render json: {
         error: "Cannot cancel order",
         message: "Only pending orders can be cancelled"
       }, status: :unprocessable_entity
       return
     end
-    
-    order.update!(status: 'cancelled')
+
+    order.update!(status: "cancelled")
     render json: {
       id: order.id,
       status: order.status,

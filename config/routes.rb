@@ -23,8 +23,7 @@ Rails.application.routes.draw do
         patch :cancel
       end
     end
-    
-    # Admin routes
+
     namespace :admin do
       get :order_analytics
     end

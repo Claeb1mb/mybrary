@@ -168,7 +168,6 @@ class Api::AdminController < ApplicationController
     }
   end
 
-  # Add order analytics endpoint
   def order_analytics
     total_orders = Order.count
     pending_orders = Order.pending.count
@@ -178,12 +177,11 @@ class Api::AdminController < ApplicationController
     total_revenue = Order.completed.sum(&:total_price)
     avg_order_value = completed_orders > 0 ? total_revenue / completed_orders : 0
 
-    recent_orders = Order.completed.where('completed_at >= ?', 7.days.ago).count
+    recent_orders = Order.completed.where("completed_at >= ?", 7.days.ago).count
 
-    # Top selling books
     top_books = OrderItem.joins(:book, :order)
-                         .where(orders: { status: 'completed' })
-                         .group('books.title', 'books.id')
+                         .where(orders: { status: "completed" })
+                         .group("books.title", "books.id")
                          .sum(:quantity)
                          .sort_by { |k, v| -v }
                          .first(5)
