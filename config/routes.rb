@@ -12,7 +12,9 @@ Rails.application.routes.draw do
   # Defines the root path route ("/")
   # root "posts#index"
   namespace :api do
-    resources :books, only: [ :index, :show ]
+    resources :books, only: [ :index, :show ] do
+      resources :reviews, only: [ :index ]
+    end
     resources :reviews, only: [ :index, :create ]
     resources :orders, only: [ :index, :create ] do
       member { post :complete }
