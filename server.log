@@ -1,0 +1,134 @@
+=> Booting Puma
+=> Rails 7.2.2.2 application starting in development 
+=> Run `bin/rails server --help` for more startup options
+Puma starting in single mode...
+* Puma version: 6.6.1 ("Return to Forever")
+* Ruby version: ruby 3.2.4 (2024-04-23 revision af471c0e01) [arm64-darwin24]
+*  Min threads: 3
+*  Max threads: 3
+*  Environment: development
+*          PID: 31603
+* Listening on http://127.0.0.1:3000
+* Listening on http://[::1]:3000
+Use Ctrl-C to stop
+Started GET "/api/orders" for ::1 at 2025-08-21 23:49:55 -0400
+  [1m[36mActiveRecord::SchemaMigration Load (0.8ms)[0m  [1m[34mSELECT "schema_migrations"."version" FROM "schema_migrations" ORDER BY "schema_migrations"."version" ASC[0m
+Processing by Api::OrdersController#index as */*
+  Parameters: {"order"=>{}}
+  [1m[36mOrder Load (1.3ms)[0m  [1m[34mSELECT "orders".* FROM "orders" WHERE "orders"."user_id" IS NULL ORDER BY "orders"."order_date" DESC[0m
+  ↳ app/controllers/api/orders_controller.rb:6:in `map'
+Completed 200 OK in 9ms (Views: 0.1ms | ActiveRecord: 79.9ms (1 query, 0 cached) | GC: 0.4ms)
+
+
+Started POST "/api/orders" for ::1 at 2025-08-21 23:50:51 -0400
+Processing by Api::OrdersController#create as */*
+  Parameters: {"user_id"=>1, "order_items"=>[{"book_id"=>1, "quantity"=>2}], "order"=>{"user_id"=>1}}
+Can't verify CSRF token authenticity.
+  [1m[36mUser Load (0.7ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = $1 LIMIT $2[0m  [["id", 1], ["LIMIT", 1]]
+  ↳ app/controllers/api/orders_controller.rb:17:in `create'
+Completed 400 Bad Request in 16ms (ActiveRecord: 5.4ms (1 query, 0 cached) | GC: 0.6ms)
+
+
+  
+ActionController::ParameterMissing (param is missing or the value is empty: items):
+  
+app/controllers/api/orders_controller.rb:18:in `create'
+Started POST "/api/orders" for ::1 at 2025-08-21 23:51:17 -0400
+Processing by Api::OrdersController#create as */*
+  Parameters: {"user_id"=>1, "items"=>[{"book_id"=>1, "quantity"=>2}], "order"=>{"user_id"=>1}}
+Can't verify CSRF token authenticity.
+  [1m[36mUser Load (0.4ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = $1 LIMIT $2[0m  [["id", 1], ["LIMIT", 1]]
+  ↳ app/controllers/api/orders_controller.rb:17:in `create'
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN[0m
+  ↳ app/services/orders/create.rb:9:in `block in call'
+  [1m[36mOrder Create (1.0ms)[0m  [1m[32mINSERT INTO "orders" ("user_id", "status", "created_at", "updated_at") VALUES ($1, $2, $3, $4) RETURNING "id", "order_date"[0m  [["user_id", 1], ["status", "pending"], ["created_at", "2025-08-22 03:51:17.989257"], ["updated_at", "2025-08-22 03:51:17.989257"]]
+  ↳ app/services/orders/create.rb:9:in `block in call'
+  [1m[36mBook Load (1.1ms)[0m  [1m[37mSELECT "books".* FROM "books" WHERE "books"."id" = $1 FOR UPDATE[0m  [["id", 1]]
+  ↳ app/services/orders/create.rb:10:in `block in call'
+  [1m[36mBook Update (0.8ms)[0m  [1m[33mUPDATE "books" SET "stock_qty" = $1, "updated_at" = $2 WHERE "books"."id" = $3[0m  [["stock_qty", 18], ["updated_at", "2025-08-22 03:51:18.003284"], ["id", 1]]
+  ↳ app/services/orders/create.rb:15:in `block (3 levels) in call'
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[31mROLLBACK[0m
+  ↳ app/services/orders/create.rb:8:in `call'
+Completed 500 Internal Server Error in 32ms (ActiveRecord: 13.4ms (4 queries, 0 cached) | GC: 3.3ms)
+
+
+  
+ActiveModel::UnknownAttributeError (unknown attribute 'price' for OrderItem.):
+
+Causes:
+NoMethodError (undefined method `price=' for #<OrderItem id: nil, order_id: nil, book_id: 1, quantity: 2, unit_price: nil, created_at: nil, updated_at: nil>)
+  
+app/services/orders/create.rb:16:in `block (3 levels) in call'
+app/services/orders/create.rb:11:in `each'
+app/services/orders/create.rb:11:in `block (2 levels) in call'
+app/services/orders/create.rb:10:in `block in call'
+app/services/orders/create.rb:8:in `call'
+app/controllers/api/orders_controller.rb:24:in `create'
+Started POST "/api/orders" for ::1 at 2025-08-21 23:51:51 -0400
+Processing by Api::OrdersController#create as */*
+  Parameters: {"user_id"=>1, "items"=>[{"book_id"=>1, "quantity"=>2}], "order"=>{"user_id"=>1}}
+Can't verify CSRF token authenticity.
+  [1m[36mUser Load (0.2ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = $1 LIMIT $2[0m  [["id", 1], ["LIMIT", 1]]
+  ↳ app/controllers/api/orders_controller.rb:17:in `create'
+  [1m[36mTRANSACTION (0.2ms)[0m  [1m[35mBEGIN[0m
+  ↳ app/services/orders/create.rb:9:in `block in call'
+  [1m[36mOrder Create (0.5ms)[0m  [1m[32mINSERT INTO "orders" ("user_id", "status", "created_at", "updated_at") VALUES ($1, $2, $3, $4) RETURNING "id", "order_date"[0m  [["user_id", 1], ["status", "pending"], ["created_at", "2025-08-22 03:51:51.992634"], ["updated_at", "2025-08-22 03:51:51.992634"]]
+  ↳ app/services/orders/create.rb:9:in `block in call'
+  [1m[36mBook Load (0.3ms)[0m  [1m[37mSELECT "books".* FROM "books" WHERE "books"."id" = $1 FOR UPDATE[0m  [["id", 1]]
+  ↳ app/services/orders/create.rb:10:in `block in call'
+  [1m[36mBook Update (0.4ms)[0m  [1m[33mUPDATE "books" SET "stock_qty" = $1, "updated_at" = $2 WHERE "books"."id" = $3[0m  [["stock_qty", 18], ["updated_at", "2025-08-22 03:51:52.000241"], ["id", 1]]
+  ↳ app/services/orders/create.rb:15:in `block (3 levels) in call'
+  [1m[36mOrderItem Exists? (2.2ms)[0m  [1m[34mSELECT 1 AS one FROM "order_items" WHERE "order_items"."book_id" = $1 AND "order_items"."order_id" = $2 LIMIT $3[0m  [["book_id", 1], ["order_id", 3], ["LIMIT", 1]]
+  ↳ app/services/orders/create.rb:16:in `block (3 levels) in call'
+  [1m[36mOrderItem Create (1.5ms)[0m  [1m[32mINSERT INTO "order_items" ("order_id", "book_id", "quantity", "unit_price", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6) RETURNING "id"[0m  [["order_id", 3], ["book_id", 1], ["quantity", 2], ["unit_price", "14.99"], ["created_at", "2025-08-22 03:51:52.008631"], ["updated_at", "2025-08-22 03:51:52.008631"]]
+  ↳ app/services/orders/create.rb:16:in `block (3 levels) in call'
+  [1m[36mTRANSACTION (0.4ms)[0m  [1m[35mCOMMIT[0m
+  ↳ app/services/orders/create.rb:8:in `call'
+Completed 201 Created in 27ms (Views: 0.1ms | ActiveRecord: 19.2ms (6 queries, 0 cached) | GC: 0.0ms)
+
+
+Started POST "/api/orders" for ::1 at 2025-08-21 23:52:00 -0400
+Processing by Api::OrdersController#create as */*
+  Parameters: {"user_id"=>1, "items"=>[{"book_id"=>1, "quantity"=>2}], "order"=>{"user_id"=>1}}
+Can't verify CSRF token authenticity.
+  [1m[36mUser Load (0.2ms)[0m  [1m[34mSELECT "users".* FROM "users" WHERE "users"."id" = $1 LIMIT $2[0m  [["id", 1], ["LIMIT", 1]]
+  ↳ app/controllers/api/orders_controller.rb:17:in `create'
+  [1m[36mTRANSACTION (0.1ms)[0m  [1m[35mBEGIN[0m
+  ↳ app/services/orders/create.rb:9:in `block in call'
+  [1m[36mOrder Create (1.0ms)[0m  [1m[32mINSERT INTO "orders" ("user_id", "status", "created_at", "updated_at") VALUES ($1, $2, $3, $4) RETURNING "id", "order_date"[0m  [["user_id", 1], ["status", "pending"], ["created_at", "2025-08-22 03:52:00.272135"], ["updated_at", "2025-08-22 03:52:00.272135"]]
+  ↳ app/services/orders/create.rb:9:in `block in call'
+  [1m[36mBook Load (0.3ms)[0m  [1m[37mSELECT "books".* FROM "books" WHERE "books"."id" = $1 FOR UPDATE[0m  [["id", 1]]
+  ↳ app/services/orders/create.rb:10:in `block in call'
+  [1m[36mBook Update (0.2ms)[0m  [1m[33mUPDATE "books" SET "stock_qty" = $1, "updated_at" = $2 WHERE "books"."id" = $3[0m  [["stock_qty", 16], ["updated_at", "2025-08-22 03:52:00.274503"], ["id", 1]]
+  ↳ app/services/orders/create.rb:15:in `block (3 levels) in call'
+  [1m[36mOrderItem Exists? (0.3ms)[0m  [1m[34mSELECT 1 AS one FROM "order_items" WHERE "order_items"."book_id" = $1 AND "order_items"."order_id" = $2 LIMIT $3[0m  [["book_id", 1], ["order_id", 4], ["LIMIT", 1]]
+  ↳ app/services/orders/create.rb:16:in `block (3 levels) in call'
+  [1m[36mOrderItem Create (0.3ms)[0m  [1m[32mINSERT INTO "order_items" ("order_id", "book_id", "quantity", "unit_price", "created_at", "updated_at") VALUES ($1, $2, $3, $4, $5, $6) RETURNING "id"[0m  [["order_id", 4], ["book_id", 1], ["quantity", 2], ["unit_price", "14.99"], ["created_at", "2025-08-22 03:52:00.276232"], ["updated_at", "2025-08-22 03:52:00.276232"]]
+  ↳ app/services/orders/create.rb:16:in `block (3 levels) in call'
+  [1m[36mTRANSACTION (0.3ms)[0m  [1m[35mCOMMIT[0m
+  ↳ app/services/orders/create.rb:8:in `call'
+Completed 201 Created in 7ms (Views: 0.1ms | ActiveRecord: 2.6ms (6 queries, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/api/orders" for ::1 at 2025-08-21 23:52:10 -0400
+Processing by Api::OrdersController#index as */*
+  [1m[36mOrder Load (0.4ms)[0m  [1m[34mSELECT "orders".* FROM "orders" WHERE "orders"."user_id" IS NULL ORDER BY "orders"."order_date" DESC[0m
+  ↳ app/controllers/api/orders_controller.rb:6:in `map'
+Completed 200 OK in 1ms (Views: 0.1ms | ActiveRecord: 0.4ms (1 query, 0 cached) | GC: 0.0ms)
+
+
+Started GET "/api/orders" for ::1 at 2025-08-21 23:52:51 -0400
+Processing by Api::OrdersController#index as */*
+  [1m[36mOrder Load (0.3ms)[0m  [1m[34mSELECT "orders".* FROM "orders" ORDER BY "orders"."order_date" DESC[0m
+  ↳ app/controllers/api/orders_controller.rb:10:in `map'
+  [1m[36mOrderItem Sum (2.9ms)[0m  [1m[34mSELECT SUM(order_items.quantity * books.price) FROM "order_items" LEFT OUTER JOIN "books" ON "books"."id" = "order_items"."book_id" WHERE "order_items"."order_id" = $1[0m  [["order_id", 4]]
+  ↳ app/models/order.rb:10:in `total_price'
+  [1m[36mOrderItem Sum (0.5ms)[0m  [1m[34mSELECT SUM(order_items.quantity * books.price) FROM "order_items" LEFT OUTER JOIN "books" ON "books"."id" = "order_items"."book_id" WHERE "order_items"."order_id" = $1[0m  [["order_id", 3]]
+  ↳ app/models/order.rb:10:in `total_price'
+Completed 200 OK in 23ms (Views: 0.1ms | ActiveRecord: 14.5ms (3 queries, 0 cached) | GC: 0.4ms)
+
+
+- Gracefully stopping, waiting for requests to finish
+=== puma shutdown: 2025-08-21 23:53:30 -0400 ===
+- Goodbye!
+Exiting
