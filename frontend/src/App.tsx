@@ -76,6 +76,19 @@ function BookStore() {
     }
   });
 
+  const cancelOrderMutation = useMutation({
+    mutationFn: api.cancelOrder,
+    onSuccess: () => {
+      queryClientInstance.invalidateQueries({ queryKey: ['orders'] });
+      queryClientInstance.invalidateQueries({ queryKey: ['books'] });
+      alert('Order cancelled successfully! Stock quantities have been restored.');
+    },
+    onError: (error) => {
+      console.error('Failed to cancel order:', error);
+      alert('Failed to cancel order. Please try again.');
+    }
+  });
+
   const createReviewMutation = useMutation({
     mutationFn: ({ bookId, rating, content }: { bookId: number; rating: number; content: string }) =>
       api.createReview(bookId, 1, rating, content), // Using hardcoded user ID as per MVP requirements
@@ -114,6 +127,12 @@ function BookStore() {
 
   const handleCompleteOrder = (orderId: number) => {
     completeOrderMutation.mutate(orderId);
+  };
+
+  const handleCancelOrder = (orderId: number) => {
+    if (window.confirm('Are you sure you want to cancel this order?')) {
+      cancelOrderMutation.mutate(orderId);
+    }
   };
 
   const handleCreateReview = (rating: number, content: string) => {
@@ -228,6 +247,7 @@ function BookStore() {
         isOpen={isOrdersOpen}
         onClose={() => setIsOrdersOpen(false)}
         onCompleteOrder={handleCompleteOrder}
+        onCancelOrder={handleCancelOrder}
       />
     </div>
   );

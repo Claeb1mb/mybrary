@@ -79,19 +79,18 @@ class Api::OrdersController < ApplicationController
   def cancel
     order = Order.find(params[:id])
 
-    if order.status != "pending"
+    begin
+      cancelled_order = Orders::Cancel.new(order: order).call
       render json: {
-        error: "Cannot cancel order",
-        message: "Only pending orders can be cancelled"
+        id: cancelled_order.id,
+        status: cancelled_order.status,
+        message: "Order cancelled successfully"
+      }, status: :ok
+    rescue StandardError => e
+      render json: {
+        error: "Order cancellation failed",
+        message: e.message
       }, status: :unprocessable_entity
-      return
     end
-
-    order.update!(status: "cancelled")
-    render json: {
-      id: order.id,
-      status: order.status,
-      message: "Order cancelled successfully"
-    }, status: :ok
   end
 end

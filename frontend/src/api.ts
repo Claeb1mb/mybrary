@@ -70,5 +70,13 @@ export const api = {
     });
     if (!response.ok) throw new Error('Failed to complete order');
     return response.json();
+  },
+
+  async cancelOrder(orderId: number): Promise<{ id: number; status: string }> {
+    const response = await fetch(`${API_BASE}/orders/${orderId}/cancel`, {
+      method: 'PATCH',
+    });
+    if (!response.ok) throw new Error('Failed to cancel order');
+    return response.json();
   }
 };

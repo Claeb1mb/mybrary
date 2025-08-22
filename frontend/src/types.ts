@@ -34,8 +34,16 @@ export interface Genre {
 export interface Order {
   id: number;
   order_date: string;
+  completed_at?: string;
   total_amount: string;
-  status: string;
+  status: 'pending' | 'completed' | 'cancelled';
+  item_count: number;
+  books: Array<{
+    title: string;
+    author: string;
+    quantity: number;
+    unit_price: string;
+  }>;
 }
 
 export interface CartItem {
